@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECE Department | Sri Balaji Chockalingam Engineering College</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233F;
+    --navy-deep:#0D1729;
+    --teal:#0F9E86;
+    --teal-light:#DCF2ED;
+    --gold:#D9A441;
+    --clay:#B34434;
+    --cream:#F6F4EE;
+    --paper:#FFFFFF;
+    --ink:#1B2334;
+    --ink-soft:#5A6377;
+    --line:#DEDACD;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 32px;perspective:1400px;}
+
+  /* TILT 3D — cards & panels lift and tilt toward the cursor, like a PCB
+     layer catching the light. Glare follows the pointer via --mx/--my,
+     set by JS. Respects prefers-reduced-motion (JS skips binding). */
+  .tilt{
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform 0.4s cubic-bezier(.22,.9,.32,1), box-shadow 0.4s ease;
+    will-change:transform;
+  }
+  .tilt::after{
+    content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+    border-radius:inherit;opacity:0;transition:opacity 0.3s ease;
+    background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.35), transparent 55%);
+    mix-blend-mode:overlay;
+  }
+  .tilt:hover::after{opacity:1;}
+  .tilt.tilt-light:hover{
+    box-shadow:0 26px 44px -18px rgba(22,35,63,0.32), 0 2px 0 rgba(15,158,134,0.25);
+  }
+  .tilt.tilt-dark:hover{
+    box-shadow:0 30px 50px -16px rgba(0,0,0,0.55), 0 0 0 1px rgba(15,158,134,0.25), 0 0 32px rgba(217,164,65,0.12);
+  }
+  @media(prefers-reduced-motion:reduce){
+    .tilt{transition:none;}
+    .tilt::after{display:none;}
+  }
+
+  /* NAV */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(246,244,238,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 32px;max-width:1080px;margin:0 auto;
+  }
+  .brandmark{display:flex;align-items:center;gap:10px;}
+  .brandmark .dot{width:10px;height:10px;border-radius:50%;background:var(--teal);}
+  .brandmark span{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;letter-spacing:0.02em;}
+  .navlinks{display:flex;gap:28px;font-size:14px;color:var(--ink-soft);}
+  .navlinks a:hover{color:var(--navy);}
+
+  /* HERO */
+  .hero{
+    position:relative;
+    padding:88px 0 64px;
+    overflow:hidden;
+    background:var(--navy);
+    color:var(--cream);
+  }
+  .hero .wrap{position:relative;z-index:2;}
+  .circuit-bg{
+    position:absolute;inset:0;z-index:1;opacity:0.5;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;
+    letter-spacing:0.08em;color:var(--gold);
+    padding:4px 12px;border:1px solid rgba(217,164,65,0.4);
+    border-radius:20px;margin-bottom:24px;
+  }
+  .hero h1{
+    font-size:42px;font-weight:600;line-height:1.15;
+    max-width:680px;margin-bottom:16px;
+  }
+  .hero .college-name{color:var(--gold);}
+  .hero p.lead{
+    max-width:560px;color:#C7CEDB;font-size:16px;margin-bottom:36px;
+  }
+  .hero-meta{
+    display:flex;gap:40px;flex-wrap:wrap;
+    padding-top:28px;border-top:1px solid rgba(255,255,255,0.12);
+  }
+  .hero-meta div{font-family:'JetBrains Mono',monospace;font-size:13px;color:#9AA5B8;}
+  .hero-meta strong{display:block;color:var(--cream);font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:500;margin-bottom:4px;}
+
+  /* TRACE DIVIDER */
+  .trace{
+    display:flex;align-items:center;justify-content:center;
+    padding:36px 0;
+  }
+  .trace svg{width:100%;max-width:1080px;height:28px;display:block;}
+
+  /* SECTIONS */
+  section{padding:48px 0;}
+  .section-head{
+    display:flex;align-items:baseline;gap:14px;margin-bottom:32px;
+  }
+  .section-head .idx{
+    font-family:'JetBrains Mono',monospace;color:var(--teal);font-size:13px;
+  }
+  .section-head h2{font-size:24px;font-weight:600;color:var(--navy);}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:28px;
+  }
+  .card h3{font-size:16px;font-weight:600;color:var(--navy);margin-bottom:10px;}
+  .card p{font-size:14px;color:var(--ink-soft);}
+
+  /* HOD */
+  .hod-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:32px 36px;
+  }
+  .hod-tag{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--teal);
+    font-weight:600;
+    text-transform:uppercase;
+    margin-bottom:18px;
+  }
+  .hod-layout{
+    display:flex;
+    align-items:center;
+    gap:28px;
+  }
+  .hod-avatar{
+    width:84px;
+    height:84px;
+    min-width:84px;
+    border-radius:50%;
+    background:var(--navy);
+    border:3px solid var(--gold);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:28px;
+    font-weight:700;
+    color:var(--gold);
+    flex-shrink:0;
+    box-shadow:0 4px 14px rgba(22,35,63,0.18);
+  }
+  .hod-info h3{
+    font-size:22px;
+    font-weight:700;
+    color:var(--navy);
+    margin-bottom:4px;
+  }
+  .hod-role{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+    font-weight:500;
+  }
+  .hod-desc{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin:0;
+  }
+
+  .stat-row{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    border:1px solid var(--line);border-radius:4px;
+    background:var(--paper);
+  }
+  .stat{
+    padding:24px 20px;border-right:1px solid var(--line);
+    background:var(--paper);
+  }
+  .stat:first-child{border-radius:4px 0 0 4px;}
+  .stat:last-child{border-right:none;border-radius:0 4px 4px 0;}
+  .stat.tilt:hover{z-index:5;}
+  .stat .num{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:600;color:var(--navy);}
+  .stat .label{font-size:12px;color:var(--ink-soft);margin-top:4px;font-family:'JetBrains Mono',monospace;}
+
+  /* DEPT PANEL */
+  .dept-panel{
+    background:var(--navy);color:var(--cream);
+    border-radius:6px;padding:40px;
+    position:relative;overflow:hidden;
+  }
+  .dept-panel::before{
+    content:"";position:absolute;top:0;right:0;width:220px;height:220px;
+    background:radial-gradient(circle, rgba(15,158,134,0.25) 0%, transparent 70%);
+  }
+  .dept-panel .tag{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);
+    letter-spacing:0.06em;margin-bottom:10px;display:block;
+  }
+  .dept-panel h3{font-size:26px;margin-bottom:12px;}
+  .dept-panel p{color:#C7CEDB;font-size:14px;max-width:520px;margin-bottom:24px;}
+  .chip-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .chip{
+    font-family:'JetBrains Mono',monospace;font-size:12px;
+    border:1px solid rgba(255,255,255,0.2);border-radius:20px;
+    padding:6px 14px;color:#DDE3EE;
+  }
+
+  .lab-list{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;}
+  .lab{
+    border-left:2px solid var(--teal);padding:6px 0 6px 16px;
+  }
+  .lab .name{font-weight:500;font-size:14px;color:var(--navy);}
+  .lab .code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);}
+
+  /* CONTACT */
+  .contact-card{
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;
+    padding:36px;display:grid;grid-template-columns:1.2fr 1fr;gap:32px;
+  }
+  .contact-card h3{font-size:20px;color:var(--navy);margin-bottom:6px;}
+  .contact-card .addr{font-size:14px;color:var(--ink-soft);margin-bottom:20px;}
+  .contact-line{
+    display:flex;gap:10px;font-size:13px;color:var(--ink);margin-bottom:10px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .contact-line .k{color:var(--teal);min-width:18px;}
+  .rep-group{display:flex;flex-direction:column;gap:14px;}
+  .badge-idcard{
+    background:var(--cream);border:1px dashed var(--line);border-radius:4px;
+    padding:16px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);
+  }
+  .badge-idcard strong{display:block;color:var(--navy);font-family:'Space Grotesk',sans-serif;font-size:14px;margin-bottom:8px;}
+
+  /* PONGAL CELEBRATION */
+  .pongal{
+    position:relative;
+    background:linear-gradient(135deg,#F9A826 0%,#E8562F 32%,#C23B6B 66%,#7A2D8C 100%);
+    padding:56px 0 64px;
+    overflow:hidden;
+  }
+  .pongal .wrap{position:relative;z-index:2;}
+  .kolam-dots{
+    position:absolute;inset:0;z-index:1;opacity:0.35;
+    background-image:radial-gradient(circle, rgba(255,255,255,0.6) 1.5px, transparent 1.5px);
+    background-size:26px 26px;
+  }
+  .pongal .section-head{margin-bottom:10px;}
+  .pongal .section-head .idx{color:#FFE9B0;}
+  .pongal .section-head h2{color:#fff;}
+  .pongal .sub{
+    color:#FFEFD6;font-size:14px;max-width:560px;margin-bottom:32px;
+  }
+  .pongal-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  }
+  .pongal-grid figure{
+    margin:0;border-radius:10px;overflow:hidden;
+    border:3px solid rgba(255,255,255,0.55);
+    background:#fff;position:relative;
+    transform:rotate(var(--tilt,0deg));
+    transition:transform 0.2s ease;
+  }
+  .pongal-grid figure:nth-child(1){--tilt:-1.5deg;}
+  .pongal-grid figure:nth-child(2){--tilt:1deg;}
+  .pongal-grid figure:nth-child(3){--tilt:-1deg;}
+  .pongal-grid figure:nth-child(4){--tilt:1.5deg;}
+  .pongal-grid figure:nth-child(5){--tilt:-1deg;}
+  .pongal-grid figure:nth-child(6){--tilt:1deg;}
+  .pongal-grid figure:hover{transform:rotate(0deg) scale(1.02);}
+  .pongal-grid img{
+    width:100%;height:220px;object-fit:cover;display:block;
+  }
+  .pongal-grid figcaption{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:#7A2D8C;background:#fff;padding:6px 10px;
+    letter-spacing:0.03em;
+  }
+  .pongal-tag{
+    display:inline-block;margin-top:28px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:#fff;
+    background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.4);
+    border-radius:20px;padding:6px 16px;
+  }
+
+  /* COLLEGE CELEBRATION */
+  .celebration{
+    position:relative;
+    background:var(--navy);
+    padding:56px 0 64px;
+    overflow:hidden;
+  }
+  .celebration .wrap{position:relative;z-index:2;}
+  .celebration .section-head .idx{color:var(--gold);}
+  .celebration .section-head h2{color:var(--cream);}
+  .celebration .sub{
+    color:#C7CEDB;font-size:14px;max-width:560px;margin-bottom:32px;
+  }
+  .celeb-grid{
+    display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;
+  }
+  .celeb-grid figure{
+    margin:0;border-radius:8px;overflow:hidden;
+    border:1px solid rgba(217,164,65,0.3);
+    background:var(--navy-deep);position:relative;
+  }
+  .celeb-grid img, .celeb-grid video{
+    width:100%;height:260px;object-fit:cover;display:block;background:#000;
+  }
+  .celeb-grid figure.wide img, .celeb-grid figure.wide video{height:100%;min-height:260px;}
+  .celeb-grid figure.wide{grid-row:span 2;}
+  .celeb-grid figcaption{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--gold);background:var(--navy-deep);padding:8px 12px;
+    letter-spacing:0.03em;border-top:1px solid rgba(217,164,65,0.2);
+  }
+  .celeb-tag{
+    display:inline-block;margin-top:28px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--navy);
+    background:var(--gold);border-radius:20px;padding:6px 16px;
+  }
+  @media(max-width:720px){
+    .celeb-grid{grid-template-columns:1fr;}
+    .celeb-grid figure.wide{grid-row:auto;}
+  }
+
+  /* STUDENT ROSTER */
+  .roster{
+    background:var(--navy-deep);
+  }
+  .roster .section-head .idx{color:var(--gold);}
+  .roster .section-head h2{color:var(--cream);}
+  .roster .sub{
+    color:#9AA5B8;font-size:14px;max-width:560px;margin-bottom:28px;
+  }
+  .roster-frame{
+    width:100%;
+    max-width:1080px;
+    aspect-ratio:1080/1920;
+    margin:0 auto;
+    background:var(--navy);
+    border:1px solid rgba(217,164,65,0.25);
+    border-radius:8px;
+    padding:40px 36px 32px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .roster-frame::before{
+    content:"";position:absolute;top:-60px;right:-60px;width:260px;height:260px;
+    background:radial-gradient(circle, rgba(15,158,134,0.22) 0%, transparent 70%);
+  }
+  .roster-frame-head{
+    position:relative;z-index:2;
+    text-align:center;
+    margin-bottom:22px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    padding-bottom:20px;
+  }
+  .roster-frame-head .tag{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.08em;
+    color:var(--teal);display:block;margin-bottom:8px;
+  }
+  .roster-frame-head h3{
+    color:var(--cream);font-size:22px;font-weight:600;margin-bottom:6px;
+  }
+  .roster-frame-head .meta{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:#9AA5B8;
+  }
+  .roster-table-wrap{
+    position:relative;z-index:2;
+    flex:1;
+    overflow-y:auto;
+  }
+  table.roster-table{
+    width:100%;
+    border-collapse:collapse;
+  }
+  table.roster-table thead th{
+    position:sticky;top:0;
+    text-align:left;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:0.06em;text-transform:uppercase;
+    color:#9AA5B8;
+    background:var(--navy);
+    padding:6px 10px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.15);
+  }
+  table.roster-table thead th.num{width:56px;text-align:center;}
+  table.roster-table tbody td{
+    padding:8px 10px;
+    font-size:13px;
+    color:var(--cream);
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  table.roster-table tbody td.num{
+    text-align:center;
+    font-family:'JetBrains Mono',monospace;
+    color:var(--teal);
+    width:56px;
+  }
+  table.roster-table tbody tr:nth-child(even){
+    background:rgba(255,255,255,0.02);
+  }
+  .roster-frame-foot{
+    position:relative;z-index:2;
+    text-align:center;
+    padding-top:16px;
+    margin-top:12px;
+    border-top:1px solid rgba(255,255,255,0.12);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:#9AA5B8;
+  }
+  .roster-frame-foot b{ color:var(--gold); }
+
+  footer{
+    border-top:1px solid var(--line);padding:28px 0;margin-top:20px;
+    font-size:13px;color:var(--ink-soft);text-align:center;
+  }
+
+  @media(max-width:720px){
+    .hero h1{font-size:30px;}
+    .grid-2, .lab-list, .contact-card, .pongal-grid{grid-template-columns:1fr;}
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .stat{border-bottom:1px solid var(--line);}
+    .navlinks{display:none;}
+    .hod-card{padding:24px;}
+    .hod-layout{flex-direction:column;align-items:flex-start;gap:16px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <div class="brandmark"><span class="dot"></span><span>SBCEC · ECE</span></div>
+    <div class="navlinks">
+      <a href="#about">About</a>
+      <a href="#hod">HOD</a>
+      <a href="#department">Department</a>
+      <a href="#labs">Labs</a>
+      <a href="#pongal">Pongal</a>
+      <a href="#celebration">Celebration</a>
+      <a href="celebration-photos.html" style="color:var(--gold);font-weight:700;">📸 Photo Gallery</a>
+      <a href="#roster">Student Name</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero">
+  <svg class="circuit-bg" viewBox="0 0 1080 400" preserveAspectRatio="none">
+    <path d="M0 60 H260 V140 H520 V60 H1080" stroke="#26365A" stroke-width="1.5" fill="none"/>
+    <path d="M0 340 H180 V260 H460 V340 H780 V220 H1080" stroke="#26365A" stroke-width="1.5" fill="none"/>
+    <path d="M0 200 H120" stroke="#26365A" stroke-width="1.5" fill="none"/>
+    <circle cx="260" cy="60" r="4" fill="#0F9E86"/>
+    <circle cx="520" cy="140" r="4" fill="#0F9E86"/>
+    <circle cx="180" cy="340" r="4" fill="#D9A441"/>
+    <circle cx="780" cy="220" r="4" fill="#D9A441"/>
+  </svg>
+  <div class="wrap">
+    <span class="eyebrow">DEPT. OF ELECTRONICS &amp; COMMUNICATION ENGINEERING</span>
+    <h1><span class="college-name">Sri Balaji Chockalingam</span> Engineering College</h1>
+    <p class="lead">A technical education institution at Arni, Tamil Nadu, offering a B.E. programme in Electronics &amp; Communication Engineering built around circuits, signals and communication systems.</p>
+    <div class="hero-meta">
+      <div><strong>Location</strong>Arni – 632 317, Tamil Nadu</div>
+      <div><strong>Phone</strong>04173 – 227393, 222075</div>
+      <div><strong>Email</strong>sbcecarni1513@gmail.com</div>
+      <div><strong>Batch on record</strong>2025 – 2029</div>
+    </div>
+  </div>
+</section>
+
+<div class="trace">
+  <svg viewBox="0 0 1080 28" preserveAspectRatio="none">
+    <line x1="0" y1="14" x2="1080" y2="14" stroke="#DEDACD" stroke-width="1"/>
+    <circle cx="90" cy="14" r="3" fill="#0F9E86"/>
+    <circle cx="540" cy="14" r="3" fill="#D9A441"/>
+    <circle cx="990" cy="14" r="3" fill="#0F9E86"/>
+  </svg>
+</div>
+
+<section id="about">
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">01</span><h2>About the college</h2></div>
+    <div class="grid-2">
+      <div class="card tilt tilt-light">
+        <h3>Institution</h3>
+        <p>Sri Balaji Chockalingam Engineering College is located in Arni, Tiruvannamalai district, Tamil Nadu, offering undergraduate engineering programmes across multiple branches.</p>
+      </div>
+      <div class="card tilt tilt-light">
+        <h3>Recognition</h3>
+        <p>Student records, including ID cards, are issued under the college seal and countersigned by the Principal for the respective academic batch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="hod">
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">02</span><h2>Head of the Department</h2></div>
+    <div class="hod-card card tilt tilt-light" data-tilt-max="4">
+      <span class="hod-tag">DEPARTMENT LEADERSHIP</span>
+      <div class="hod-layout">
+        <div class="hod-avatar">SB</div>
+        <div class="hod-info">
+          <h3>Mr. S. Boobathi</h3>
+          <div class="hod-role">Head of the Department &middot; Electronics &amp; Communication Engineering</div>
+          <p class="hod-desc">Mr. S. Boobathi leads the ECE department, guiding the academic programme, laboratory development and student mentoring across the batch.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="department">
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">03</span><h2>Electronics &amp; Communication Engineering</h2></div>
+
+    <div class="stat-row">
+      <div class="stat tilt tilt-light" data-tilt-max="6"><div class="num">B.E.</div><div class="label">DEGREE PROGRAMME</div></div>
+      <div class="stat tilt tilt-light" data-tilt-max="6"><div class="num">4 YRS</div><div class="label">DURATION</div></div>
+      <div class="stat tilt tilt-light" data-tilt-max="6"><div class="num">2025–29</div><div class="label">CURRENT BATCH</div></div>
+      <div class="stat tilt tilt-light" data-tilt-max="6"><div class="num">ECE</div><div class="label">BRANCH CODE</div></div>
+    </div>
+
+    <div style="height:28px;"></div>
+
+    <div class="dept-panel tilt tilt-dark" data-tilt-max="4">
+      <span class="tag">DEPARTMENT PROFILE</span>
+      <h3>Electronics &amp; Communication Engineering</h3>
+      <p>The ECE department trains students in electronic circuits, signal processing, communication systems, embedded design and VLSI, preparing them for roles in telecom, semiconductor and embedded industries.</p>
+      <div class="chip-row">
+        <span class="chip">Analog &amp; Digital Electronics</span>
+        <span class="chip">Digital Design</span>
+        <span class="chip">Signals &amp; Systems</span>
+        <span class="chip">Communication Systems</span>
+        <span class="chip">Embedded Systems</span>
+        <span class="chip">VLSI Design</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="labs">
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">04</span><h2>Core laboratories</h2></div>
+    <div class="lab-list">
+      <div class="lab"><div class="name">Digital Design Lab</div><div class="code">ECE-LAB-00</div></div>
+      <div class="lab"><div class="name">Electronic Circuits Lab</div><div class="code">ECE-LAB-01</div></div>
+      <div class="lab"><div class="name">Communication Engineering Lab</div><div class="code">ECE-LAB-02</div></div>
+      <div class="lab"><div class="name">Digital Signal Processing Lab</div><div class="code">ECE-LAB-03</div></div>
+      <div class="lab"><div class="name">Microprocessors &amp; Embedded Lab</div><div class="code">ECE-LAB-04</div></div>
+      <div class="lab"><div class="name">VLSI Design Lab</div><div class="code">ECE-LAB-05</div></div>
+      <div class="lab"><div class="name">Electromagnetic Fields Lab</div><div class="code">ECE-LAB-06</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="pongal" id="pongal">
+  <div class="kolam-dots"></div>
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">05</span><h2>Pongal celebration-2026</h2></div>
+    <p class="sub">Students and staff of the ECE department marking the harvest festival together on campus, with pongal pots, kolam decorations and traditional dress.</p>
+    <div class="pongal-grid">
+
+      <figure><img src="pongal-1.jpg" alt="ECE students together at the campus entrance during Pongal"><figcaption>Campus gathering</figcaption></figure>
+      <figure><img src="pongal-2.jpg" alt="Students and staff group photo near the decorated Pongal pandal"><figcaption>Group photo · pandal</figcaption></figure>
+      <figure><img src="pongal-3.jpg" alt="Group of ECE students posing together in festive shirts"><figcaption>Batchmates together</figcaption></figure>
+      <figure><img src="pongal-4.jpg" alt="Students with faculty in traditional attire at the Pongal decoration"><figcaption>With faculty</figcaption></figure>
+      <figure><img src="IMG-20260112-WA0052.jpg" alt="Student in traditional veshti standing near the fields"><figcaption>Traditional attire</figcaption></figure>
+      <figure><img src="pongal-6.jpg" alt="Large group of students in colourful traditional clothing on campus"><figcaption>Whole batch</figcaption></figure>
+    </div>
+    <span class="pongal-tag">Pongal Vazhthukkal &middot; ECE Department</span>
+  </div>
+</section>
+
+<section class="celebration" id="celebration">
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">06</span><h2>College celebration</h2></div>
+    <p class="sub">Moments from the ECE department's college celebration — the whole batch together on campus, plus short video clips from the event.</p>
+    <div class="celeb-grid">
+      <figure class="wide tilt tilt-dark" data-tilt-max="4"><img src="celebration-1.jpg" alt="Large group of ECE students together at the college celebration, seated in the stands"><figcaption>Batch together · celebration day</figcaption></figure>
+      <figure class="tilt tilt-dark" data-tilt-max="3"><video src="celebration.mp4" controls preload="metadata"></video><figcaption>Celebration clip 1</figcaption></figure>
+      <figure class="tilt tilt-dark" data-tilt-max="3"><video src="celebration-clip-2.mp4" controls preload="metadata"></video><figcaption>Celebration clip 2</figcaption></figure>
+      <figure class="tilt tilt-dark" data-tilt-max="3"><video src="celebration-clip-3.mp4" controls preload="metadata"></video><figcaption>Celebration clip 3</figcaption></figure>
+    <figure class="tilt tilt-dark" data-tilt-max="3"><video src="celebration-clip-4.mp4" controls preload="metadata"></video><figcaption>Celebration clip 4</figcaption></figure>
+    </div>
+    <div style="margin-top:28px;text-align:center;">
+      <a href="celebration-photos.html" style="display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--gold),#B8860B);color:var(--navy);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;padding:12px 26px;border-radius:999px;text-decoration:none;box-shadow:0 8px 24px rgba(212,160,23,0.3);transition:all .2s ease;">
+        <span style="font-size:18px;">📸</span>
+        <span>Open Dedicated College Celebration &amp; Travel Gallery (111 Photos &amp; Slideshow) &rarr;</span>
+      </a>
+    </div>
+    <span class="celeb-tag">College Celebration &middot; ECE Department</span>
+  </div>
+</section>
+
+<section class="roster" id="roster">
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">07</span><h2>Student Name</h2></div>
+    <p class="sub">Full class roll of the Electronics &amp; Communication Engineering department, Batch 2025 – 2029.</p>
+
+    <div class="roster-frame tilt tilt-dark" data-tilt-max="3">
+      <div class="roster-frame-head">
+        <span class="tag">CLASS ROLL &middot; BATCH 2025–2029</span>
+        <h3>B.E. Electronics &amp; Communication Engineering</h3>
+        <div class="meta">SRI BALAJI CHOCKALINGAM ENGINEERING COLLEGE &middot; ARNI</div>
+      </div>
+
+      <div class="roster-table-wrap">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th class="num">No.</th>
+              <th>Student Name</th>
+            </tr>
+          </thead>
+          <tbody id="roster-body">
+            <!-- Rows generated below. Edit the NAMES array to add all 47 real names. -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="roster-frame-foot">Total students on roll — <b><span id="total-count">47</span></b></div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="section-head"><span class="idx mono">08</span><h2>Contact &amp; address</h2></div>
+    <div class="contact-card tilt tilt-light" data-tilt-max="4">
+      <div>
+        <h3>Sri Balaji Chockalingam Engineering College</h3>
+        <p class="addr">Arni – 632 317, Tiruvannamalai District, Tamil Nadu, India</p>
+        <div class="contact-line"><span class="k">#</span> Ph: 04173 – 227393 / 222075</div>
+        <div class="contact-line"><span class="k">@</span> sbcecarni1513@gmail.com</div>
+        <div class="contact-line"><span class="k">&gt;</span> Department: Electronics &amp; Communication Engineering</div>
+      </div>
+      <div class="rep-group">
+        <div class="badge-idcard">
+          <strong>ECE Class Representatives (Boys)</strong>
+          NAME: Dinesh Kumar, Nandhakumar<br>
+          COURSE: B.E.<br>
+          BRANCH: Electronics &amp; Comm. Engg.<br>
+          BATCH: 2025 – 2029
+        </div>
+        <div class="badge-idcard">
+          <strong>ECE Class Representatives (Girls)</strong>
+          NAME: Indhumathi B, Rubini B<br>
+          COURSE: B.E.<br>
+          BRANCH: Electronics &amp; Comm. Engg.<br>
+          BATCH: 2025 – 2029
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Sri Balaji Chockalingam Engineering College · Arni – 632 317, Tamil Nadu</div>
+</footer>
+
+<script>
+  // Replace these 47 placeholder names with the real class list, in order.
+  const NAMES = [
+    "Akash A",
+    "Aravind P",
+    "Deepak V",
+    "Deva Prasath Y",
+    "Dhanushree E",
+    "Dhinisha P",
+    "Dhivya S",
+    "Dinesh Kumar E",
+    "Gokul M",
+    "Indhumathi B",
+    "Jothilakshmi S",
+    "Karthikeyan S",
+    "Kaviya S",
+    "Kaviyarasu D",
+    "Kishore S",
+    "Kishore S",
+    "Krishnakumar M",
+    "Megavarnan S",
+    "Mohidasan I",
+    "Mugilan P",
+    "Mukundhan B",
+    "Muthuvel D",
+    "Nandhakumar R",
+    "Naresh Kumar S",
+    "Palani Y",
+    "Pavithra K",
+    "Perumal S",
+    "Pooja L",
+    "Pooja V",
+    "Poonjolai N",
+    "Prasanth S",
+    "Premkumar M",
+    "Priyadharshini G",
+    "Priyadharshini N",
+    "Raja V",
+    "Rithika Sri A",
+    "Rubini B",
+    "Sakthi D",
+    "Sathiyavani P",
+    "Sharmila P",
+    "Sunitha M",
+    "Tharun Kumar D",
+    "Vasumathi M",
+    "Venkatesan S",
+    "Kishore Kumar Y",
+    "Kanmani R",
+    "Lokesh K"
+  ];
+
+  // Pads the list to 47 entries with placeholders if fewer names are given.
+  while (NAMES.length < 47) NAMES.push(`Student ${NAMES.length + 1}`);
+
+  document.getElementById('total-count').textContent = NAMES.length;
+
+  const tbody = document.getElementById('roster-body');
+  NAMES.forEach((name, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="num">${String(idx + 1).padStart(2, '0')}</td>
+      <td>${name}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // 3D TILT — cards and panels tilt toward the pointer and catch a
+  // soft glare, like a circuit board layer lifting under light.
+  // Skipped entirely for prefers-reduced-motion.
+  (function initTilt(){
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const els = document.querySelectorAll('.tilt');
+    els.forEach(el => {
+      const maxRotate = parseFloat(el.dataset.tiltMax) || 8;
+      let frame = null;
+
+      el.addEventListener('mousemove', (e) => {
+        const rect = el.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const rx = (0.5 - py) * 2 * maxRotate;
+        const ry = (px - 0.5) * 2 * maxRotate;
+
+        if (frame) cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          el.style.transform =
+            `perspective(1000px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateY(-6px) scale(1.015)`;
+          el.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`);
+          el.style.setProperty('--my', `${(py * 100).toFixed(1)}%`);
+        });
+      });
+
+      el.addEventListener('mouseleave', () => {
+        if (frame) cancelAnimationFrame(frame);
+        el.style.transform = '';
+      });
+    });
+  })();
+ 
+</script>
+<center>
+   <a  href="https://sbece-app-2025-2029.netlify.app/" style="color: rgb(192, 166, 117);">SBCEC ECE WEB APP .COM</a>
+</center>
+
+</body>
+</html>
+<h5 style="color: gold;"> Creating by ECE Department  </h5>
